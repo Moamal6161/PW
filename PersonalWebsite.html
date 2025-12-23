@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muamal Murtaza</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: sans-serif; direction: rtl; }
+
+        /* القائمة الرئيسية الزجاجية */
+        .glass-article {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%; max-width: 400px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(156, 156, 156, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+            z-index: 10; color: #fff; text-align: center;
+        }
+
+        .grid-container { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+
+        .grid-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px; border-radius: 12px;
+            border: 1px solid rgba(129, 129, 129, 0.3);
+            transition: all 0.3s ease; cursor: pointer;
+        }
+
+        .grid-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 136, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* تصميم الـ Dialog */
+        dialog {
+            width: 80%; max-width: 350px;
+            background: rgba(10, 10, 25, 0.9);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 136, 255, 0.3);
+            border-radius: 15px; color: white;
+            padding: 20px; text-align: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 1);
+        }
+
+        dialog::backdrop { background: rgba(0, 0, 0, 0.7); }
+
+        .close-btn {
+            margin-top: 15px; background: #0088ff;
+            color: white; border: none; padding: 8px 20px;
+            border-radius: 5px; cursor: pointer;
+        }
+
+        @media (min-width: 1200px) { .glass-article { width: 25%; } }
+    </style>
+</head>
+<body>
+
+    <article class="glass-article">
+        <h2 style="margin-bottom: 5px;">مؤمل</h2>
+        <p style="font-size: 0.85rem; opacity: 0.7;">اختر قسماً لاستكشافه</p>
+        
+        <div class="grid-container">
+            <div class="grid-item" onclick="openDialog('about')"><h3>عني - About</h3><p>من أنا؟</p></div>
+            <div class="grid-item" onclick="openDialog('projects')"><h3>أعمالي - Projects</h3><p>ماذا أنجزت؟</p></div>
+            <div class="grid-item" onclick="openDialog('accounts')"><h3>حساباتي - Social</h3><p>تواصل معي</p></div>
+        </div>
+    </article>
+    <dialog id="about">
+        <h3>عني</h3>
+        <p>مرحباً! أنا مؤمل، عمري 16 عام وانا مطور ومحلل سياسي واقتصادي</p>
+        <button class="close-btn" onclick="this.parentElement.close()">إغلاق</button>
+    </dialog>
+    <dialog id="projects">
+        <h3>أعمالي</h3>
+        <p>لدي عدة مشاريع مثل <a href="https://moamal6161.github.io/TODOLIST/TODOLIST.html" style=" text-decoration: none;">To-Do List</a> واعمل على مشروع لعبة هاوية البنفسج الذي سوف يطور بامحرك godot</p>
+        <button class="close-btn" onclick="this.parentElement.close()">إغلاق</button>
+    </dialog>
+    <dialog id="accounts">
+        <h3>حساباتي</h3>
+        <br>instagram : Mr.Muamal.313</br>
+        <br>discord : Muamal313</br>
+        <button class="close-btn" onclick="this.parentElement.close()">إغلاق</button>
+    </dialog>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- نظام الـ Dialog ---
+        window.openDialog = (id) => { document.getElementById(id).showModal(); };
+
+        // --- مشهد Three.js المعتمد سابقاً ---
+        const scene = new THREE.Scene();
+        const canvas = document.createElement('canvas');
+        canvas.width = 512; canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        const drawBG = (intensity) => {
+            const grad = ctx.createRadialGradient(256, 256, 0, 256, 256, 220);
+            grad.addColorStop(0, `rgba(0, ${Math.floor(26 * intensity)}, ${Math.floor(80 * intensity)}, 1)`);
+            grad.addColorStop(0.8, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 512);
+        };
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = window.innerWidth < 768 ? 35 : 25;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const spotLight = new THREE.SpotLight(0x0033ff, 6000);
+        spotLight.position.set(0, -35, 15);
+        spotLight.penumbra = 1;
+        scene.add(spotLight);
+
+        const cubes = [];
+        const geometry = new THREE.BoxGeometry(2.5, 2.5, 2.5);
+        for (let i = 0; i < (window.innerWidth < 768 ? 12 : 25); i++) {
+            const material = new THREE.MeshStandardMaterial({ color: 0x000208, metalness: 0.5, roughness: 0.7, emissive: 0x000a2a });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set((Math.random()-0.5)*40, (Math.random()-0.5)*40, (Math.random()-0.5)*20);
+            cube.userData = { rot: 0.002, phase: Math.random()*Math.PI*2, pulseDur: 6+Math.random()*7 };
+            scene.add(cube);
+            cubes.push(cube);
+        }
+
+        const bgTexture = new THREE.CanvasTexture(canvas);
+        scene.background = bgTexture;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.001;
+            let bgPulse = (Math.sin(time * (Math.PI * 2 / 3)) + 1) / 2;
+            drawBG(0.5 + bgPulse * 0.5);
+            bgTexture.needsUpdate = true;
+
+            cubes.forEach(cube => {
+                cube.rotation.x += cube.userData.rot;
+                cube.rotation.y += cube.userData.rot;
+                cube.position.x += Math.sin(time * 0.2 + cube.userData.phase) * 0.01;
+                cube.position.y += Math.cos(time * 0.2 + cube.userData.phase) * 0.01;
+                let p = (Math.sin(time * (Math.PI*2/cube.userData.pulseDur) + cube.userData.phase)+1)/2;
+                cube.material.emissiveIntensity = p * 0.3;
+                cube.material.color.setRGB(0, 0, p * 0.1);
+            });
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
